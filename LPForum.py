@@ -2,13 +2,17 @@
 Read/Extract Mails using python
 Requirements :
     1. imaplib, 2. OS, 3. base64, 4. email
+    5. emai.parser -> BytesParser (for parsing the data
+    stored inside a file or variable).
 """
 
 import imaplib
 import logging
 #import base64
-#import email
-import socket
+import os
+import email
+import socket                                   # Require for imaplib. connection
+from dotenv import load_dotenv                  # Require for loading env. variables
 from getpass import getpass
 
 logging.basicConfig(
@@ -42,21 +46,21 @@ class LPForum:
             logging.debug(err)
             return False
 
-    def get_message_body(self, obj):
+    def get_message_id(self, obj):
         """ Method for Return the number of mails
-        specified in the mailbox """
+        specified in the mailbox. """
 
         obj.select(mailbox="INBOX")  # Select a mailbox first
         typ, msgnums = obj.search(
             "utf-8", "FROM", "linkinpark@discoursemail.com"
-        )  # Search message from mailbox
+        )  # Search message inside mailbox
         if typ == 'OK':
             return msgnums
         return 0
 
-    def fetch_message(self, obj, message_id):
-        """ Extracting message from Raw messages.
-        message_num contains id of email messages
+    def fetch_raw_message(self, obj, message_id):
+        """ Extracting message from message id's.
+        message_id contains id's of email messages
         by linkinpark@discoursemail """
 
         id_ = message_id[0].split()
@@ -64,27 +68,54 @@ class LPForum:
         typ, data = obj.fetch(latest_email, '(RFC822)')
 
         # Convert the fetched binary obj. into a string
-        raw_text = data[0][1].decode('utf-8')
+        raw_str = data[0][1]#.decode('utf-8')
 
         if typ == 'OK':
-            # Write the raw text into a file
-            # data contains two part -> id[0][0] and message body[0][1]
-            with open('message', 'w') as f:
-                f.write(raw_text)
+            # raw_text contains two part -> id[0][0] and message body[0][1]
+            return raw_str
         else:
             return False
 
+    def extract_contents(self, raw_string):
+        """ Parse the message :
+        header  (recipient information)
+        payload (content) """
+
+        # Get Headers
+        headers = {}
+        message = email.message_from_bytes(raw_string)
+        print(' Is Multipart : ', message.is_multipart())
+        headers['To'] = message['To']
+        headers['From'] = message['From']
+        headers['Subject'] = message['Subject']
+
+        # Get Payloads
+        payload = None
+        for part in message.walk():
+            if part.get_content_type() == 'text/plain':
+                payload = message.get_payload()[0]
+
+        payload = payload.get_payload()
+        with open('message', 'w') as f:
+            f.write(payload)
+        print(headers)
+
+
 def main():
     """ Testing LPForum Class """
-    username = input(" Enter Mail(without Domain) : ")
-    password = getpass(" Enter Password : ")
-    org = "@gmail.com"
-    username = username + org
+    #username = input(" Enter Mail(without Domain) : ")
+    #password = getpass(" Enter Password : ")
+    load_dotenv()
+    # Load username/password from environment variables
+    username = os.getenv('USERNAME')
+    password = os.getenv('PASSWORD')
 
     # Calling LPForum
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
-    msg_id = lpclient.get_message_body(imap_obj)
-    lpclient.fetch_message(imap_obj, msg_id)
+    msg_id = lpclient.get_message_id(imap_obj)
+    r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
+    a = lpclient.extract_contents(r_msg)
     imap_obj.close()
     imap_obj.logout()
+    return a
