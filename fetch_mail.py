@@ -60,13 +60,13 @@ class LPForum:
             return msgnums
         return 0
 
-    def fetch_raw_message(self, obj, message_id, index):
+    def fetch_raw_message(self, obj, message_id):
         """ Extracting raw message from message id's.
         message_id contains id's of email messages
         by linkinpark@discoursemail """
 
         id_ = message_id[0].split()
-        latest_email = id_[index]  # Last id is the latest
+        latest_email = id_[-1]  # Last id is the latest
         typ, data = obj.fetch(latest_email, "(RFC822)")
 
         # Convert the fetched binary obj. into a string
@@ -120,7 +120,6 @@ class LPForum:
                     if user_tag in last_quote_tag or user_tag in piece:
                         found.append(last_quote_full + piece)
 
-        # Extract Useful message from a payload
         # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
         # pattern = pattern.replace("user_tag", user_tag)
         # payload = repr(payload)
@@ -148,13 +147,12 @@ def main():
     # Load username/password from environment variables
     username = os.getenv("USERNAME")
     password = os.getenv("PASSWORD")
-    index = int(input(" Mail index number : "))
 
     # Calling LPForum
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
     msg_id = lpclient.get_message_id(imap_obj)
-    r_msg = lpclient.fetch_raw_message(imap_obj, msg_id, index)
+    r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
     print(lpclient.extract_contents(r_msg))
     imap_obj.close()
     imap_obj.logout()
