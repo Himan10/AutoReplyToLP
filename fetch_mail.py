@@ -13,6 +13,7 @@ import logging  # For catching logs
 import os
 import email
 import re
+import email.policy
 import socket  # Require for imaplib. connection
 from dotenv import load_dotenv  # Require for loading env. variables
 from getpass import getpass  # For username/password
@@ -23,7 +24,6 @@ logging.basicConfig(
     format=" %(asctime)s -> %(messsage)s ",
     level=logging.DEBUG,
 )
-
 
 class LPForum:
     def __init__(self, email, password):
@@ -60,13 +60,13 @@ class LPForum:
             return msgnums
         return 0
 
-    def fetch_raw_message(self, obj, message_id):
+    def fetch_raw_message(self, obj, message_id, index):
         """ Extracting raw message from message id's.
         message_id contains id's of email messages
         by linkinpark@discoursemail """
 
         id_ = message_id[0].split()
-        latest_email = id_[-1]  # Last id is the latest
+        latest_email = id_[index]  # Last id is the latest
         typ, data = obj.fetch(latest_email, "(RFC822)")
 
         # Convert the fetched binary obj. into a string
@@ -78,14 +78,14 @@ class LPForum:
         else:
             return False
 
-    def extract_contents(self, user_tag, raw_string):
+    def extract_contents(self, raw_string):
         """ Parse the message :
         header  (recipient information)
         payload (content) """
 
         # Get Headers
         headers = {}
-        message = email.message_from_bytes(raw_string)
+        message = email.message_from_bytes(raw_string, policy=email.policy.default)
         print(" Is Multipart : ", message.is_multipart())
         headers["To"] = message["To"]
         headers["From"] = message["From"]
@@ -98,22 +98,46 @@ class LPForum:
             if part.get_content_type() == "text/plain":
                 payload_body = message.get_payload()[0]
 
-        payload = payload_body.get_payload()
+        payload = payload_body.get_content()
+
+        user_tag = 'Himan10'
+        re_quote = r'(\[/?quote(?:=[^]]*)?\])'
+        pieces = re.split(re_quote, payload)
+        quote_level = 0
+        last_quote_tag = last_quote_full = ''
+        found = []
+        for piece in pieces:
+            if piece.startswith('[quote'):
+                if quote_level == 0:
+                    last_quote_tag = last_quote_full = piece
+                quote_level += 1
+            else:
+                if quote_level:
+                    last_quote_full += piece
+                    if piece.startswith('[/quote'):
+                        quote_level -= 1
+                else:
+                    if user_tag in last_quote_tag or user_tag in piece:
+                        found.append(last_quote_full + piece)
 
         # Extract Useful message from a payload
-        pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
-        pattern = pattern.replace("user_tag", user_tag)
-        payload = repr(payload)
-        found = re.search(pattern, payload)
+        # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
+        # pattern = pattern.replace("user_tag", user_tag)
+        # payload = repr(payload)
+        # found = re.search(pattern, payload)
 
-        if found.group(1) and found.group(2) is not None:
+        if found is not None:
             # Write message/headers into a file
             with open("message", "w") as f:
                 for key, value in headers.items():
                     f.write(f"{key} : {value}\n\n")
-                f.write(f" Quote: {found.group(1)} \n \nMessage: {found.group(2)}")
+                # f.write(f" Quote: {found.group(1)} \n \nMessage: {found.group(2)}")
+
+                for quote_msg in found:
+                    f.write(quote_msg)
+            return True
         else:
-            print(False)
+            return False
 
 
 def main():
@@ -124,13 +148,13 @@ def main():
     # Load username/password from environment variables
     username = os.getenv("USERNAME")
     password = os.getenv("PASSWORD")
-    user_tag = str(input(" Enter your user tag : "))
+    index = int(input(" Mail index number : "))
 
     # Calling LPForum
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
     msg_id = lpclient.get_message_id(imap_obj)
-    r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
-    lpclient.extract_contents(user_tag, r_msg)
+    r_msg = lpclient.fetch_raw_message(imap_obj, msg_id, index)
+    print(lpclient.extract_contents(r_msg))
     imap_obj.close()
     imap_obj.logout()
