@@ -21,3 +21,8 @@ Sending mail
             https://developers.google.com/gmail/api/quickstart/python
       
          -> Setting up a smtp debugging server (for testing the code)
+         
+      2. smptlib module
+         -> For sending mails on internet (but if you're going to use this
+            then you should need to turn on the "Less secure apps on" which
+            will enable gmail to accept connection from your python scripts.
