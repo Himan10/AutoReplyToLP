@@ -1,0 +1,23 @@
+Read mails
+------------
+      1. imaplib module 
+         -> For establing a connection, get mail id and fetch content
+         1.1 socket module 
+             -> this is necessary when using imaplib.IMAP4_SSL (for connection with
+                a encrypted SSL socket).
+
+      2. Email module
+         -> For extracting the sensible/specific information from a raw message
+            (come in bytes).
+      3. Regex module
+         -> Creating a pattern for finding such message/quote tag from a string
+            of message. 
+  
+Sending mail
+------------
+
+      1. BASIC Requirements
+         -> Get the Gmail API (for accessing mail boxes and sending mails)
+            https://developers.google.com/gmail/api/quickstart/python
+      
+         -> Setting up a smtp debugging server (for testing the code)
