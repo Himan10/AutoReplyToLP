@@ -16,10 +16,10 @@ import smtplib
 import ssl  # for secure connection
 import logging
 from dotenv import load_dotenv
-from email.mime.multipart import MIMEMultipart # multipart = mixed
-from email.mime.text import MIMEText # multipart = text/plain
+from email.mime.multipart import MIMEMultipart  # multipart = mixed
+from email.mime.text import MIMEText  # multipart = text/plain
 from email.policy import default  # Make a use of RFC and \n For line ending
-from os import getenv
+import os
 
 logging.basicConfig(
     filename="logs",
@@ -60,38 +60,38 @@ class SendToLPForum:
         msg = MIMEMultipart()
 
         # Add headers
-        msg['From'] = self.user
-        with open('message', 'r') as fp:
+        msg["From"] = self.user
+        with open("message", "r") as fp:
             data = fp.readlines()
 
         if ToAddr is None:
-            msg['To'] = ToAddr = data[6].split(':')[1].strip()
+            msg["To"] = ToAddr = data[6].split(":")[1].strip()
         else:
-            msg['To'] = ToAddr
-        msg['Subject'] = data[4].split(':')[1].strip()
+            msg["To"] = ToAddr
+        msg["Subject"] = data[4].split(":")[1].strip()
 
         # Attach a payload to the MIMEText object. Type -> text
         if Message is None:
-            raise Exception('Emtpy Message')
+            raise Exception("Emtpy Message")
 
-        msg.attach(MIMEText(Message, 'plain'))
+        msg.attach(MIMEText(Message, "plain"))
         Message = msg.as_string()
         server.sendmail(self.user, ToAddr, Message)
 
 
-if __name__ == "__main__":
+def main():
     load_dotenv()  # load user/password to environment variables
-    username = getenv("USERNAME")
-    password = getenv("PASSWORD")
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
     lp = SendToLPForum(username, password)
     server = lp.login()
 
     # Get message content from File
-    lp_message = '''Yeah linkenli everything's fine here..
-    Wish the same for you <3
-    Yeah i really really liked that art and especially the Hunting
-    Party album cover, it's so fckin amazing.. Also once i tried to drew
-    an album cover of hunting party but it was my first time so it's not
-    that much good but maybe someone like it and appreciate the efforts
-    of doing it with only blue pen :D :D '''
+    lp_message = input(' Enter Message(leave blank to read from file): ')
+    if len(lp_message) < 1:
+        path = str(input(' Path : '))
+        if os.path.exists(path):
+            with open(path, 'r') as fp:
+                lp_message = fp.read()
+
     msg = lp.message_body(server, lp_message)
