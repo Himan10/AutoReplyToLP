@@ -1,10 +1,12 @@
 """ Basic usage of smtplib For
-Sending mails to LinkinPark Forum (linkinpark@disclosuremail.com)
+Sending mails to LinkinPark Forum.
+Get the receiver's mail from file(message)
 
 Method 1:
 ---------
-    1. smtplib modul (smtp or esmtp: Extended smtp)
+    1. smtplib module (smtp or esmtp: Extended smtp)
         -> Establishing connection
+        -> Create a MIME text/image obj. from scratch
         -> Send mail()
         -> Quit()
 
@@ -14,7 +16,6 @@ import smtplib
 import ssl  # for secure connection
 import logging
 from dotenv import load_dotenv
-from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart # multipart = mixed
 from email.mime.text import MIMEText # multipart = text/plain
 from email.policy import default  # Make a use of RFC and \n For line ending
@@ -51,7 +52,7 @@ class SendToLPForum:
         except Exception as err:
             logging.debug(err)
 
-    def message_body(self, server, Message=None):
+    def message_body(self, server, Message=None, ToAddr=None):
         """ Message body : payload and headers
         Creating a Msg. object from scratch """
 
@@ -63,16 +64,19 @@ class SendToLPForum:
         with open('message', 'r') as fp:
             data = fp.readlines()
 
-        msg['To'] = To = data[6].split(':')[1].strip()
+        if ToAddr is None:
+            msg['To'] = ToAddr = data[6].split(':')[1].strip()
+        else:
+            msg['To'] = ToAddr
         msg['Subject'] = data[4].split(':')[1].strip()
 
-        # Attach a payload to the MIME msg object
+        # Attach a payload to the MIMEText object. Type -> text
         if Message is None:
             raise Exception('Emtpy Message')
 
         msg.attach(MIMEText(Message, 'plain'))
         Message = msg.as_string()
-        server.sendmail(self.user, To, Message)
+        server.sendmail(self.user, ToAddr, Message)
 
 
 if __name__ == "__main__":
@@ -83,11 +87,11 @@ if __name__ == "__main__":
     server = lp.login()
 
     # Get message content from File
-    lp_message = '''
-    Hey Man, how are you? Doing good?
-    Yeah, TBH i tried to make a hybrid theory soldier once but it's
-    too damn hard man.. i mean, whoever did this deserves a huge respect.
-    and let's see coz my after doing this Dealpool/Taskmaster pencil drawing,
-    i'll try to draw The Hunting Party poster. Cya man.. Take care and
-    good wishes to all of the LP family members '''
+    lp_message = '''Yeah linkenli everything's fine here..
+    Wish the same for you <3
+    Yeah i really really liked that art and especially the Hunting
+    Party album cover, it's so fckin amazing.. Also once i tried to drew
+    an album cover of hunting party but it was my first time so it's not
+    that much good but maybe someone like it and appreciate the efforts
+    of doing it with only blue pen :D :D '''
     msg = lp.message_body(server, lp_message)
