@@ -16,10 +16,12 @@ import smtplib
 import ssl  # for secure connection
 import logging
 from dotenv import load_dotenv
+from email.mime.base import MIMEBase # Base = application/octet-stream
 from email.mime.multipart import MIMEMultipart  # multipart = mixed
 from email.mime.text import MIMEText  # multipart = text/plain
 from email.policy import default  # Make a use of RFC and \n For line ending
-import os
+from email import encoders
+from os import getenv
 
 logging.basicConfig(
     filename="logs",
@@ -50,48 +52,86 @@ class SendToLPForum:
             server.login(self.user, self.passwd)
             return server
         except Exception as err:
-            logging.debug(err)
+            raise Exception(f'Login Error - {err}')
 
-    def message_body(self, server, Message=None, ToAddr=None):
+    def message_body(self, server, Message: str, ToAddr=None):
         """ Message body : payload and headers
-        Creating a Msg. object from scratch """
+        Creating a MIME Msg. object from scratch
 
-        data = []
-        msg = MIMEMultipart()
+        Related
+         |__Alternative
+                |_ plain/text
+                |_ plain/html
+         |_Image
+        """
+        # Related - Send images with messages
+        msg_root = MIMEMultipart('related')
 
-        # Add headers
-        msg["From"] = self.user
-        with open("message", "r") as fp:
+        # Add mail headers - From, To, Subject
+        msg_root["From"] = self.user
+        with open("message.txt", "r") as fp:
             data = fp.readlines()
 
         if ToAddr is None:
-            msg["To"] = ToAddr = data[6].split(":")[1].strip()
+            msg_root["To"] = ToAddr = data[6].split(":")[1].strip()
         else:
-            msg["To"] = ToAddr
-        msg["Subject"] = data[4].split(":")[1].strip()
+            msg_root["To"] = ToAddr
+        msg_root["Subject"] = data[4].split(":")[1].strip()
+        msg_root.preamble = 'This is a Multi part message Plain Text/Image'
 
-        # Attach a payload to the MIMEText object. Type -> text
+        # Alternative - diff. type of same content
+        # text/plain
+        msgAlt = MIMEMultipart('alternative')
+
         if Message is None:
             raise Exception("Emtpy Message")
+        msgAlt.attach(MIMEText(Message, 'plain', 'utf-8'))
 
-        msg.attach(MIMEText(Message, "plain"))
-        Message = msg.as_string()
-        server.sendmail(self.user, ToAddr, Message)
+        # text/html
+        Message = Message.replace('\n', '<br>')
+        html = """\
+        <html>
+        <head></head>
+        <body>
+        <p>Hi!<br>
+        %s
+        </p>
+        <img src="cid:image1"><br>
+        </body>
+        </html> """ % Message
+
+        msgAlt.attach(MIMEText(html, 'html'))
+        msg_root.attach(msgAlt)
+
+        # MIMEBase = application/octet-stream -> contain documents
+        p = MIMEBase('application', 'octet-stream')
+
+        with open('linkinpark.jpg', 'rb') as pic_file:
+            p.set_payload(pic_file.read())
+
+        encoders.encode_base64(p)
+        p.add_header('Content-Disposition', 'attachment', filename='linkinpark.png')
+        p.add_header('Content-ID', '<image1>')
+        msg_root.attach(p)
+
+        # Send mail
+        server.sendmail(self.user, ToAddr, msg_root.as_string())
+        return msg_root
 
 
-def main():
-    load_dotenv()  # load user/password to environment variables
-    username = os.getenv("USERNAME")
-    password = os.getenv("PASSWORD")
+if __name__ == "__main__":
+    """ testing purpose """
+
+    load_dotenv()   # load username/password from environment file
+    username = getenv('USERNAME')
+    password = getenv('PASSWORD')
+
     lp = SendToLPForum(username, password)
-    server = lp.login()
+    smtp_server = lp.login()
 
-    # Get message content from File
-    lp_message = input(' Enter Message(leave blank to read from file): ')
-    if len(lp_message) < 1:
-        path = str(input(' Path : '))
-        if os.path.exists(path):
-            with open(path, 'r') as fp:
-                lp_message = fp.read()
+    # Read random generated message from file
+    lp_message = None
+    with open('message2.txt', 'r') as file:
+        lp_message = file.read()
 
-    msg = lp.message_body(server, lp_message)
+    email = lp.message_body(smtp_server, lp_message)
