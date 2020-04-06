@@ -7,7 +7,8 @@
 - [ ] Reading the notification pop-up and creating a linux service for the same scrip
 
 # Some details :
-  1. Fetch email message -> Whenever someone quoted my message or mentioned me in one of their comment then LP forum sends a mail to notify about those messages. So, this step working is very basic like, it only fetches those messages which come from <linkinpark@discoursemail.com and are UNREAD too
+  1. Fetch email message -> Whenever someone quoted my message or mentioned me in one of their comment then LP forum sends a mail to notify about those messages. So, this step working is very basic like, it only fetches those messages which come from <linkinpark@discoursemail.com and are UNREAD too.
+    You can check the fetched message (stored in fetched_message.txt) how the quote tags and mentions are arranged
   
   2. Send email message -> Here i created a MIME message object (from scratch) which includes :
         
