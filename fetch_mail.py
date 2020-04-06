@@ -1,5 +1,5 @@
 """
-Read/Extract Mails using python
+Read/Extract Unseen Mails using python
 Requirements :
     1. imaplib, 2. OS, 3. base64, 4. email
     5. emai.parser -> BytesParser (for parsing the data
@@ -19,11 +19,12 @@ from dotenv import load_dotenv  # Require for loading env. variables
 from getpass import getpass  # For username/password
 
 logging.basicConfig(
-    filename="logs",
+    filename="logs.txt",
     filemode="a",
     format=" %(asctime)s -> %(messsage)s ",
     level=logging.DEBUG,
 )
+
 
 class LPForum:
     def __init__(self, email, password):
@@ -54,9 +55,9 @@ class LPForum:
 
         obj.select(mailbox="INBOX")  # Select a mailbox first
         typ, msgnums = obj.search(
-            "utf-8", "FROM", "linkinpark@discoursemail.com"
+            "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
         )  # Search message inside mailbox
-        if typ == "OK":
+        if len(msgnums) > 0:
             return msgnums
         return 0
 
@@ -65,78 +66,77 @@ class LPForum:
         message_id contains id's of email messages
         by linkinpark@discoursemail """
 
-        id_ = message_id[0].split()
-        latest_email = id_[-1]  # Last id is the latest
-        typ, data = obj.fetch(latest_email, "(RFC822)")
-
-        # Convert the fetched binary obj. into a string
-        raw_str = data[0][1]  # .decode('utf-8')
+        ids = message_id[0].split()
+        data = []
+        for id_ in ids:
+            typ, response = obj.fetch(id_, "(RFC822)")
+            data.append(response[0][1])
 
         if typ == "OK":
             # raw_text contains two part -> id[0][0] and message body[0][1]
-            return raw_str
+            return data
         else:
             return False
 
-    def extract_contents(self, raw_string):
+    def extract_contents(self, raw_data: list):
         """ Parse the message :
         header  (recipient information)
         payload (content) """
 
         # Get Headers
-        headers = {}
-        message = email.message_from_bytes(raw_string, policy=email.policy.default)
-        print(" Is Multipart : ", message.is_multipart())
-        headers["To"] = message["To"]
-        headers["From"] = message["From"]
-        headers["Subject"] = message["Subject"]
-        headers["Reply-To"] = message["Reply-To"]
+        sameHeaders = {}
+        differHeaders = {}
+        messages_obj = [
+            email.message_from_bytes(raw_, policy=email.policy.default)
+            for raw_ in raw_data
+        ]
+
+        sameHeaders["To"] = messages_obj[0]["To"]
+        sameHeaders["Subject"] = messages_obj[0]["Subject"]
+
+        # Get different headers
+        differHeaders["From"] = []
+        differHeaders["Reply-To"] = []
+        for msg in messages_obj:
+            differHeaders["From"].append(msg["From"])
+            differHeaders["Reply-To"].append(msg["Reply-To"])
 
         # Get Payloads
-        payload_body = None
-        for part in message.walk():
-            if part.get_content_type() == "text/plain":
-                payload_body = message.get_payload()[0]
-
-        payload = payload_body.get_content()
-
-        user_tag = 'Himan10'
-        re_quote = r'(\[/?quote(?:=[^]]*)?\])'
-        pieces = re.split(re_quote, payload)
-        quote_level = 0
-        last_quote_tag = last_quote_full = ''
-        found = []
-        for piece in pieces:
-            if piece.startswith('[quote'):
-                if quote_level == 0:
-                    last_quote_tag = last_quote_full = piece
-                quote_level += 1
-            else:
-                if quote_level:
-                    last_quote_full += piece
-                    if piece.startswith('[/quote'):
-                        quote_level -= 1
-                else:
-                    if user_tag in last_quote_tag or user_tag in piece:
-                        found.append(last_quote_full + piece)
+        payload_body = []
+        for message in messages_obj:
+            payload_body.append(message.get_payload()[0].get_content())
 
         # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
-        # pattern = pattern.replace("user_tag", user_tag)
-        # payload = repr(payload)
-        # found = re.search(pattern, payload)
+        user_tag = "Himan10"
+        regex_pattern = r"(\[/?quote(?:=[^]]*)?\])"
+        quote_level = 0
+        last_quote_tag = last_quote_message = ""
+        found = []
+
+        for payload in payload_body:
+            pieces = re.split(regex_pattern, payload)
+
+            for piece in pieces:
+                if piece.startswith("[quote"):
+                    if quote_level == 0:
+                        last_quote_tag = last_quote_message = piece
+                    quote_level += 1
+                else:
+                    if quote_level:
+                        last_quote_message += piece
+                        if piece.startswith("[/quote"):
+                            quote_level -= 1
+                    else:
+                        if user_tag in last_quote_tag or user_tag in piece:
+                            found.append(last_quote_message + piece)
 
         if found is not None:
-            # Write message/headers into a file
-            with open("message", "w") as f:
-                for key, value in headers.items():
-                    f.write(f"{key} : {value}\n\n")
-                # f.write(f" Quote: {found.group(1)} \n \nMessage: {found.group(2)}")
+            with open("message.txt", "w") as file:
+                file.write(f'To : {sameHeaders["To"]}\n\n')
+                file.write(f'Subject: {sameHeaders["Subject"]}\n\n')
 
-                for quote_msg in found:
-                    f.write(quote_msg)
-            return True
-        else:
-            return False
+                for message in found:
+                    file.write(message)
 
 
 def main():
@@ -152,7 +152,9 @@ def main():
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
     msg_id = lpclient.get_message_id(imap_obj)
+    if msg_id == 0:
+        return False
     r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
-    print(lpclient.extract_contents(r_msg))
+    test_obj = lpclient.extract_contents(r_msg)
     imap_obj.close()
     imap_obj.logout()
