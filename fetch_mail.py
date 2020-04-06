@@ -58,7 +58,7 @@ class LPForum:
         )  # Search message inside mailbox
         if len(msgnums[0]) > 0:
             return msgnums
-        return 0
+        return False
 
     def fetch_raw_message(self, obj, message_id):
         """ Extracting raw message from message id's.
