@@ -54,7 +54,7 @@ class LPForum:
         specified in the mailbox. """
 
         obj.select(mailbox="INBOX")  # Select a mailbox first
-        typ, msgnums = obj.search(
+        _, msgnums = obj.search(
             "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
         )  # Search message inside mailbox
         if len(msgnums) > 0:
@@ -152,7 +152,7 @@ def main():
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
     msg_id = lpclient.get_message_id(imap_obj)
-    if msg_id == 0:
+    if len(msg_id[0]) == 0:
         return False
     r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
     test_obj = lpclient.extract_contents(r_msg)
