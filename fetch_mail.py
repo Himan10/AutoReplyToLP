@@ -16,7 +16,6 @@ import re
 import email.policy
 import socket  # Require for imaplib. connection
 from dotenv import load_dotenv  # Require for loading env. variables
-from getpass import getpass  # For username/password
 
 logging.basicConfig(
     filename="logs.txt",
@@ -57,7 +56,7 @@ class LPForum:
         _, msgnums = obj.search(
             "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
         )  # Search message inside mailbox
-        if len(msgnums) > 0:
+        if len(msgnums[0]) > 0:
             return msgnums
         return 0
 
@@ -84,22 +83,21 @@ class LPForum:
         payload (content) """
 
         # Get Headers
-        sameHeaders = {}
-        differHeaders = {}
+        Headers = {}
         messages_obj = [
             email.message_from_bytes(raw_, policy=email.policy.default)
             for raw_ in raw_data
         ]
 
-        sameHeaders["To"] = messages_obj[0]["To"]
-        sameHeaders["Subject"] = messages_obj[0]["Subject"]
+        Headers["To"] = messages_obj[0]["To"]
+        Headers["Subject"] = messages_obj[0]["Subject"]
 
         # Get different headers
-        differHeaders["From"] = []
-        differHeaders["Reply-To"] = []
+        Headers["From"] = []
+        Headers["Reply-To"] = []
         for msg in messages_obj:
-            differHeaders["From"].append(msg["From"])
-            differHeaders["Reply-To"].append(msg["Reply-To"])
+            Headers["From"].append(msg["From"])
+            Headers["Reply-To"].append(msg["Reply-To"])
 
         # Get Payloads
         payload_body = []
@@ -130,10 +128,15 @@ class LPForum:
                         if user_tag in last_quote_tag or user_tag in piece:
                             found.append(last_quote_message + piece)
 
+        # Write the message into a file
         if found is not None:
             with open("message.txt", "w") as file:
-                file.write(f'To : {sameHeaders["To"]}\n\n')
-                file.write(f'Subject: {sameHeaders["Subject"]}\n\n')
+                file.write(
+                    f' To: {Headers["To"]}\n\n \
+Subject: {Headers["Subject"]}\n\n \
+From: {Headers["From"][0]}\n\n \
+Reply-To: {Headers["Reply-To"][0]}\n\n'
+                )
 
                 for message in found:
                     file.write(message)
@@ -152,9 +155,9 @@ def main():
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
     msg_id = lpclient.get_message_id(imap_obj)
-    if len(msg_id[0]) == 0:
+    if msg_id is False:
         return False
     r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
-    test_obj = lpclient.extract_contents(r_msg)
+    lpclient.extract_contents(r_msg)
     imap_obj.close()
     imap_obj.logout()
