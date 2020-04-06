@@ -1,3 +1,5 @@
+###### Don't use this file for reading content #######
+
 Some details about sender and receiver
 --------------------------------------
  
@@ -5,9 +7,9 @@ To: h3c.initiative46@gmail.com
 
 Subject: [Linkin Park / LPU Forums] [The Back Room] HEY! YOU! What are you up to right now! (Part 3)
 
-From: anna834 via LP / LPU Forum <linkinpark@discoursemail.com>
+From: anna834 via LP / LPU Forum <email of LP's forum>
 
-Reply-To: LP / LPU Forum <linkinpark+d9c9bde76ba4ad8a787a1c12c758bec6@discoursemail.com>
+Reply-To: LP / LPU Forum <email of LP's forum>
  
 Quote tags(My message) + Sender Reply (after [/quote])
 ------------------------------------------------------
