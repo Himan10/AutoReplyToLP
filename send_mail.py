@@ -54,7 +54,7 @@ class SendToLPForum:
         except Exception as err:
             raise Exception(f'Login Error - {err}')
 
-    def message_body(self, server, Message: str, ToAddr=None):
+    def message_body(self, Message: str):
         """ Message body : payload and headers
         Creating a MIME Msg. object from scratch
 
@@ -72,11 +72,8 @@ class SendToLPForum:
         with open("message.txt", "r") as fp:
             data = fp.readlines()
 
-        if ToAddr is None:
-            msg_root["To"] = ToAddr = data[6].split(":")[1].strip()
-        else:
-            msg_root["To"] = ToAddr
-        msg_root["Subject"] = data[4].split(":")[1].strip()
+        msg_root["To"] = ToAddr = data[6].split(":")[1].strip()
+        msg_root["Subject"] = data[2].split(":")[1].strip()
         msg_root.preamble = 'This is a Multi part message Plain Text/Image'
 
         # Alternative - diff. type of same content
@@ -106,7 +103,7 @@ class SendToLPForum:
         # MIMEBase = application/octet-stream -> contain documents
         p = MIMEBase('application', 'octet-stream')
 
-        with open('linkinpark.jpg', 'rb') as pic_file:
+        with open('resources/linkinpark.jpg', 'rb') as pic_file:
             p.set_payload(pic_file.read())
 
         encoders.encode_base64(p)
@@ -115,8 +112,8 @@ class SendToLPForum:
         msg_root.attach(p)
 
         # Send mail
-        server.sendmail(self.user, ToAddr, msg_root.as_string())
-        return msg_root
+        # server.sendmail(self.user, ToAddr, msg_root.as_string())
+        return ToAddr, msg_root
 
 
 if __name__ == "__main__":
@@ -134,4 +131,5 @@ if __name__ == "__main__":
     with open('message2.txt', 'r') as file:
         lp_message = file.read()
 
-    email = lp.message_body(smtp_server, lp_message)
+    toAddr, email_message = lp.message_body(lp_message)
+    smtp_server.sendmail(username, toAddr, email_message.as_string())
