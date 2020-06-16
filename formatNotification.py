@@ -4,7 +4,7 @@
 import sys
 
 def fuckString(data: str) -> str:
-    return data[0].split(' ')[1].strip('"') 
+    return data[0].split('"')[1]
 
 wasteLines = 0
 while wasteLines <= 1:
@@ -21,18 +21,21 @@ constructData = []
 try:
     while True:
         NotifyData = sys.stdin.readline().strip().split('\n')
-        if fuckString(NotifyData) in applications:
-            matchedApp = fuckString(NotifyData)
-            DataNumber = 0
-        
-        print(NotifyData, DataNumber)
-        if matchedApp in applications:
-            if DataNumber == 2:
-                constructData = [fuckString(NotifyData)]
-            if DataNumber == 3:
-                with open('temp.txt', 'w') as file:
-                    file.write(f'{constructData[0]} : {NotifyData[0].split("string")[1]}\n')
+        if len(NotifyData[0]) <= 1:
+            pass
+        else:
+            if fuckString(NotifyData) in applications:
+                matchedApp = fuckString(NotifyData)
+                DataNumber = 0
+            
+            print(NotifyData, DataNumber)
+            if matchedApp in applications:
+                if DataNumber == 2:
+                    constructData = [fuckString(NotifyData)]
+                if DataNumber == 3:
+                    with open('temp.txt', 'w') as file:
+                        file.write(f'{constructData[0]} : {NotifyData[0].split("string")[1]}\n')
 
-            DataNumber += 1
+                DataNumber += 1
 except KeyboardInterrupt as e:
     print(e)
