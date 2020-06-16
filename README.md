@@ -4,7 +4,7 @@
 - [x] Fetch email message (DONE)
 - [x] Send email message (DONE)
 - [ ] Creating a random text generator.
-- [ ] Reading the notification pop-up and creating a linux service for the same scrip
+- [x] Reading the notification pop-up
 
 ## Some details :
   1. Fetch email message -> Whenever someone quoted my message or mentioned me in one of their comment then LP forum sends a mail to notify about those messages. So, this step working is very basic like, it only fetches those messages which come from <linkinpark@discoursemail.com and are UNREAD too.
