@@ -2,6 +2,7 @@
 
 # this while loop is for not considering two string fields which you get right after starting a process
 import sys
+import fetch_mail
 
 def fuckString(data: str) -> str:
     return data[0].split('"')[1]
@@ -36,6 +37,7 @@ try:
                     with open('temp.txt', 'w') as file:
                         file.write(f'{constructData[0]} : {NotifyData[0].split("string")[1]}\n')
 
+                    fetch_mail.main() # start fetching the email once the notification receives
                 DataNumber += 1
 except KeyboardInterrupt as e:
     print(e)
