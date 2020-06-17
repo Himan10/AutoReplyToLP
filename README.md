@@ -19,8 +19,10 @@
      
      Now, after combining all these MIME classes(MIMEText, MIMEBase) objects with MIMEMultipart('related') i can easily send mails by using smtp.sendmail(fromAddr, toAddr, msg)
 
-  3. **Capture incoming Notifications** : Here, i used a tool called "dbus-monitor" which helps us to monitor the messages going through Dbus message bus. This Dbus message bus mentioned here refers to the Session bus which is mainly used for communication between two applications. 
- In easiest way, think of a Dbus-daemon as a PIPE connected with two or more services or programs (using dbus-library). Now, this tool monitors the message going through this PIPE and print the raw data to stdout. 
+  3. **Capture incoming Notifications** : Here, i used a tool called "dbus-monitor" which helps us to monitor the messages going   through Dbus message bus. This Dbus message bus mentioned here refers to the Session bus which is mainly used for communication   between two applications. 
+
+        In easiest way, think of a Dbus-daemon as a PIPE connected with two or more services or programs (using dbus-library). Now, this tool monitors the message going through this PIPE and print the raw data to stdout. 
+
      ```
      DISCORD -> send notification
                 |
@@ -30,6 +32,7 @@
                 | 
      DUNST -> Receive notification && Print
      ```
- Once i received the raw data which contains some arrays, strings, signals, methods, sender and destination service. It is kinda hard to parse this raw data but we can perform regex search here to extract the contents having char "string", because mostly the summary, data and application are of type string. Then my next task is to format it. So, we can only get the required data like -> header : payload.
 
- I wrote a python script to do this and save the formatted data into a file or i have done one more thing i.e., Check if the notification came from LPForum then run other py script (fetchmail.py and sendmail.py) otherwise keep scanning the summary of incoming notifications.  
+        Once i received the raw data which contains some arrays, strings, signals, methods, sender and destination service. It is     kinda hard to parse this raw data but we can perform regex search here to extract the contents having char "string", because  mostly the   summary, data and application are of type string. Then my next task is to format it. So, we can only get the   required data like   -> header : payload.
+
+        I wrote a python script to do this and save the formatted data into a file or i have done one more thing i.e., Check if the notification came from LPForum then run other py script (fetchmail.py and sendmail.py) otherwise keep scanning the summary of   incoming notifications.  
