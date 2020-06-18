@@ -24,7 +24,7 @@
         In easiest way, think of a Dbus-daemon as a PIPE connected with two or more services or programs (using dbus-library). Now, this tool monitors the message going through this PIPE and print the raw data to stdout. 
 
      ```
-     DISCORD -> send notification
+     LPforum -> send notification
                 |
                 |
                 | -> dbus-monitor
