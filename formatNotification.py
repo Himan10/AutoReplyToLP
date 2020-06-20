@@ -5,7 +5,7 @@ import sys
 import fetch_mail
 
 def fuckString(data: str) -> str:
-    return data[0].split('"')[1]
+    return data[0].split('"', 1)[1]
 
 wasteLines = 0
 while wasteLines <= 1:
