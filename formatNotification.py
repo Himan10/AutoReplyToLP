@@ -1,11 +1,11 @@
 #!/bin/env python
 
 # this while loop is for not considering two string fields which you get right after starting a process
+# ['string "ShanonPark posted in "HEY! YOU! What are you up to right now! (Part 3)" - Linkin Park / LPU Forums"'] 2 
 import sys
-import fetch_mail
 
 def fuckString(data: str) -> str:
-    return data[0].split('"', 1)[1]
+    return data[0].split('"', 1)[1].replace('"', '')
 
 wasteLines = 0
 while wasteLines <= 1:
@@ -17,10 +17,11 @@ del tempInput, wasteLines
 # string fields after above two non-considering fields
 DataNumber = 0
 matchedApp = None
-applications = ['notify-send', 'discord']
+applications = ['notify-send', 'discord', "KDE Connect", "Brave", "Firefox",  "firefox"]
 constructData = []
-try:
-    while True:
+
+while True:
+    try:
         NotifyData = sys.stdin.readline().strip().split('\n')
         if len(NotifyData[0]) <= 1:
             pass
@@ -29,15 +30,15 @@ try:
                 matchedApp = fuckString(NotifyData)
                 DataNumber = 0
             
-            print(NotifyData, DataNumber)
+            #print(NotifyData, DataNumber)
             if matchedApp in applications:
                 if DataNumber == 2:
                     constructData = [fuckString(NotifyData)]
-                if DataNumber == 3:
-                    with open('temp.txt', 'w') as file:
+                if DataNumber == 3 and 'linkin park' in constructData[0].lower():
+                    with open('temp.txt', 'a') as file:
                         file.write(f'{constructData[0]} : {NotifyData[0].split("string")[1]}\n')
 
-                    fetch_mail.main() # start fetching the email once the notification receives
                 DataNumber += 1
-except KeyboardInterrupt as e:
-    print(e)
+    except KeyboardInterrupt as e:
+        break
+        #print(e)
