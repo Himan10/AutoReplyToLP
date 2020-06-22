@@ -17,7 +17,7 @@ def GenerateMessage():
     #Select a quote
     finalQuote = ""
     with open('txtFiles/quotes.txt', 'r') as file:
-        FinalQuote = choice(file.readlines())   # return a list
+        finalQuote = choice(file.readlines())   # return a list
 
     #Create a line
     lastLine = "\nLots of Love and virtual hugs "
