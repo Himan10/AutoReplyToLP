@@ -152,7 +152,7 @@ Reply-To: {Headers["Reply-To"][0]}\n\n'
         return Headers
 
 
-def main()
+def main():
     """ Testing LPForum Class """
 
     start_time = perf_counter()
