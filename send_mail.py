@@ -5,7 +5,7 @@ Get the receiver's mail from file(message)
 Method 1:
 ---------
     1. smtplib module (smtp or esmtp: Extended smtp)
-        -> Establishing connection
+        -> Establish a connection
         -> Create a MIME text/image obj. from scratch
         -> Send mail()
         -> Quit()
@@ -22,6 +22,7 @@ from email.mime.text import MIMEText  # multipart = text/plain
 from email.policy import default  # Make a use of RFC and \n For line ending
 from email import encoders
 from os import getenv
+from CreateRandomMessage import GenerateMessage
 
 logging.basicConfig(
     filename="logs",
@@ -38,21 +39,23 @@ class SendToLPForum:
         self.user = username
         self.passwd = password
         self.host = "smtp.gmail.com"
-        self.port = 465  # Port (ssl=465, tls=587)
+        self.port = 587  # Port (ssl=465, tls=587)
 
     def login(self):
         """ Login to the smtp server """
 
         # load the system trusted CA certificates
         # enable host checking and certificates validation
-        context = ssl.create_default_context()
-
-        server = smtplib.SMTP_SSL(self.host, self.port, context=context)
         try:
+            context = ssl.create_default_context()
+            server = smtplib.SMTP(self.host, self.port)
+            server.starttls(context=context) # secured by tls connection
+
             server.login(self.user, self.passwd)
             return server
         except Exception as err:
-            raise Exception(f'Login Error - {err}')
+            logging.info(f"SendToLPForum.login : {err}")
+            return False
 
     def message_body(self, Message: str):
         """ Message body : payload and headers
@@ -81,7 +84,7 @@ class SendToLPForum:
         msgAlt = MIMEMultipart('alternative')
 
         if Message is None:
-            raise Exception("Emtpy Message")
+            raise Exception("Empty Message")
         msgAlt.attach(MIMEText(Message, 'plain', 'utf-8'))
 
         # text/html
@@ -103,7 +106,7 @@ class SendToLPForum:
         # MIMEBase = application/octet-stream -> contain documents
         p = MIMEBase('application', 'octet-stream')
 
-        with open('resources/linkinpark.jpg', 'rb') as pic_file:
+        with open('resources/OpenUpMyMind.jpg', 'rb') as pic_file:
             p.set_payload(pic_file.read())
 
         encoders.encode_base64(p)
@@ -116,7 +119,7 @@ class SendToLPForum:
         return ToAddr, msg_root
 
 
-if __name__ == "__main__":
+def main():
     """ testing purpose """
 
     load_dotenv()   # load username/password from environment file
@@ -125,11 +128,13 @@ if __name__ == "__main__":
 
     lp = SendToLPForum(username, password)
     smtp_server = lp.login()
+    if smtp_server is False:
+        return False
 
-    # Read random generated message from file
-    lp_message = None
-    with open('message2.txt', 'r') as file:
-        lp_message = file.read()
+    lp_message = GenerateMessage() # Create a random message to be send to LPforum
 
     toAddr, email_message = lp.message_body(lp_message)
     smtp_server.sendmail(username, toAddr, email_message.as_string())
+    return True
+
+main()
