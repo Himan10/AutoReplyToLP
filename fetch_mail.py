@@ -8,8 +8,8 @@ Requirements :
 
 import imaplib  # For reading messages
 import logging  # For catching logs
-
-# import base64
+from time import perf_counter
+import sys
 import os
 import email
 import re
@@ -24,7 +24,6 @@ logging.basicConfig(
     level=logging.DEBUG,
 )
 
-
 class LPForum:
     def __init__(self, email, password):
         """ Constructor """
@@ -37,11 +36,10 @@ class LPForum:
     def login(self):
         """ Creating a secure connection over SSL socket
         Return an imap4 object to "mail" variable """
-
-        mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
-
-        # login to user account
         try:
+            mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+
+            # login to user account
             mail.login(self.email_user, self.email_pass)
             return mail
         except imaplib.IMAP4.error as err:
@@ -56,6 +54,7 @@ class LPForum:
         _, msgnums = obj.search(
             "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
         )  # Search message inside mailbox
+        print(msgnums)
         if len(msgnums[0]) > 0:
             return msgnums
         return False
@@ -63,7 +62,9 @@ class LPForum:
     def fetch_raw_message(self, obj, message_id):
         """ Extracting raw message from message id's.
         message_id contains id's of email messages
-        by linkinpark@discoursemail """
+        by linkinpark@discoursemail. 
+        (RFC822) is a msg. format, defines => header, payload
+        """
 
         ids = message_id[0].split()
         data = []
@@ -104,7 +105,6 @@ class LPForum:
         for message in messages_obj:
             payload_body.append(message.get_payload()[0].get_content())
 
-        # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
         user_tag = "Himan10"
         regex_pattern = r"(\[/?quote(?:=[^]]*)?\])"
         quote_level = 0
@@ -115,7 +115,7 @@ class LPForum:
             pieces = re.split(regex_pattern, payload)
 
             for piece in pieces:
-                if piece.startswith("[quote"):
+                if piece.startswith("[quote") and user_tag in piece:
                     if quote_level == 0:
                         last_quote_tag = last_quote_message = piece
                     quote_level += 1
@@ -126,11 +126,13 @@ class LPForum:
                             quote_level -= 1
                     else:
                         if user_tag in last_quote_tag or user_tag in piece:
+                            print(last_quote_message)
                             found.append(last_quote_message + piece)
+                            last_quote_tag = last_quote_message = ""
 
-        # Write the message into a file
+        # Write the message inside message.txt
         if found is not None:
-            with open("message.txt", "w") as file:
+            with open("/home/hi-man/python/pyproject/LPforum/txtFiles/message.txt", "w") as file:
                 file.write(
                     f' To: {Headers["To"]}\n\n \
 Subject: {Headers["Subject"]}\n\n \
@@ -141,9 +143,19 @@ Reply-To: {Headers["Reply-To"][0]}\n\n'
                 for message in found:
                     file.write(message)
 
+        # Write the senders name inside message2.txt
+        with open("/home/hi-man/python/pyproject/LPforum/txtFiles/message2.txt", "w") as file:
+            for eachHeader in Headers['From']:
+                sender_name = eachHeader.split('via')[0]
+                file.write(f'{sender_name}\n')
 
-def main():
+        return Headers
+
+
+def main()
     """ Testing LPForum Class """
+
+    start_time = perf_counter()
     # username = input(" Enter Mail(without Domain) : ")
     # password = getpass(" Enter Password : ")
     load_dotenv()
@@ -156,8 +168,12 @@ def main():
     imap_obj = lpclient.login()
     msg_id = lpclient.get_message_id(imap_obj)
     if msg_id is False:
-        return False
+         return False
     r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
-    lpclient.extract_contents(r_msg)
+    header = lpclient.extract_contents(r_msg)
     imap_obj.close()
     imap_obj.logout()
+    print(perf_counter() - start_time)
+    return True
+
+main()
