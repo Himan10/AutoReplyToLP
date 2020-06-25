@@ -8,9 +8,11 @@ Requirements :
 
 import imaplib  # For reading messages
 import logging  # For catching logs
+# import base64
 from time import perf_counter
 import sys
 import os
+import notify2
 import email
 import re
 import email.policy
@@ -19,9 +21,9 @@ from dotenv import load_dotenv  # Require for loading env. variables
 
 logging.basicConfig(
     filename="logs.txt",
-    filemode="a",
-    format=" %(asctime)s -> %(messsage)s ",
-    level=logging.DEBUG,
+    filemode="w",
+    format=" %(asctime)s -> %(message)s ",
+    level=logging.INFO,
 )
 
 class LPForum:
@@ -43,7 +45,7 @@ class LPForum:
             mail.login(self.email_user, self.email_pass)
             return mail
         except imaplib.IMAP4.error as err:
-            logging.debug(err)
+            logging.info(err)
             return False
 
     def get_message_id(self, obj):
@@ -54,7 +56,7 @@ class LPForum:
         _, msgnums = obj.search(
             "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
         )  # Search message inside mailbox
-        print(msgnums)
+        logging.info(f'Found unseen mail list : {msgnums}')
         if len(msgnums[0]) > 0:
             return msgnums
         return False
@@ -105,6 +107,7 @@ class LPForum:
         for message in messages_obj:
             payload_body.append(message.get_payload()[0].get_content())
 
+        # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
         user_tag = "Himan10"
         regex_pattern = r"(\[/?quote(?:=[^]]*)?\])"
         quote_level = 0
@@ -112,7 +115,7 @@ class LPForum:
         found = []
 
         for payload in payload_body:
-            pieces = re.split(regex_pattern, payload)
+            pieces = re.split(regex_pattern, payload)#[0].split('\n')
 
             for piece in pieces:
                 if piece.startswith("[quote") and user_tag in piece:
@@ -126,13 +129,13 @@ class LPForum:
                             quote_level -= 1
                     else:
                         if user_tag in last_quote_tag or user_tag in piece:
-                            print(last_quote_message)
+                            #print(last_quote_message)
                             found.append(last_quote_message + piece)
                             last_quote_tag = last_quote_message = ""
 
         # Write the message inside message.txt
         if found is not None:
-            with open("/home/hi-man/python/pyproject/LPforum/txtFiles/message.txt", "w") as file:
+            with open("/home/hi-man/python/pyproject/LPforum/message.txt", "w") as file:
                 file.write(
                     f' To: {Headers["To"]}\n\n \
 Subject: {Headers["Subject"]}\n\n \
@@ -144,7 +147,7 @@ Reply-To: {Headers["Reply-To"][0]}\n\n'
                     file.write(message)
 
         # Write the senders name inside message2.txt
-        with open("/home/hi-man/python/pyproject/LPforum/txtFiles/message2.txt", "w") as file:
+        with open("/home/hi-man/python/pyproject/LPforum/message2.txt", "w") as file:
             for eachHeader in Headers['From']:
                 sender_name = eachHeader.split('via')[0]
                 file.write(f'{sender_name}\n')
@@ -163,6 +166,12 @@ def main():
     username = os.getenv("USERNAME")
     password = os.getenv("PASSWORD")
 
+    # set notification
+    notify2.init('AutoReplyToLP')
+    popUp = notify2.Notification('AutoReplyToLP - fetch_mail.py', 'DONE')
+    popUp.set_timeout(10000)
+    popUp.set_urgency(0)
+
     # Calling LPForum
     lpclient = LPForum(username, password)
     imap_obj = lpclient.login()
@@ -171,9 +180,9 @@ def main():
          return False
     r_msg = lpclient.fetch_raw_message(imap_obj, msg_id)
     header = lpclient.extract_contents(r_msg)
+    popUp.show()
     imap_obj.close()
     imap_obj.logout()
-    print(perf_counter() - start_time)
-    return True
+    logging.info(f'Time taken : {perf_counter() - start_time}')
 
-main()
+#main()
