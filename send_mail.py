@@ -12,24 +12,14 @@ Method 1:
 
 """
 
+import ssl # for creating context - CA certificates
 import smtplib
-import ssl  # for secure connection
 import logging
-from dotenv import load_dotenv
+from email import encoders # for encoding the data into base64
 from email.mime.base import MIMEBase # Base = application/octet-stream
 from email.mime.multipart import MIMEMultipart  # multipart = mixed
 from email.mime.text import MIMEText  # multipart = text/plain
 from email.policy import default  # Make a use of RFC and \n For line ending
-from email import encoders
-from os import getenv
-from CreateRandomMessage import GenerateMessage
-
-logging.basicConfig(
-    filename="logs",
-    filemode="a",
-    format=" SMTP: %(asctime)s - %(message)s",
-    level=logging.DEBUG,
-)
 
 
 class SendToLPForum:
@@ -48,9 +38,10 @@ class SendToLPForum:
         # enable host checking and certificates validation
         try:
             context = ssl.create_default_context()
+
             server = smtplib.SMTP(self.host, self.port)
             server.starttls(context=context) # secured by tls connection
-
+        
             server.login(self.user, self.passwd)
             return server
         except Exception as err:
@@ -72,7 +63,7 @@ class SendToLPForum:
 
         # Add mail headers - From, To, Subject
         msg_root["From"] = self.user
-        with open("message.txt", "r") as fp:
+        with open("txtFiles/message.txt", "r") as fp:
             data = fp.readlines()
 
         msg_root["To"] = ToAddr = data[6].split(":")[1].strip()
@@ -117,24 +108,3 @@ class SendToLPForum:
         # Send mail
         # server.sendmail(self.user, ToAddr, msg_root.as_string())
         return ToAddr, msg_root
-
-
-def main():
-    """ testing purpose """
-
-    load_dotenv()   # load username/password from environment file
-    username = getenv('USERNAME')
-    password = getenv('PASSWORD')
-
-    lp = SendToLPForum(username, password)
-    smtp_server = lp.login()
-    if smtp_server is False:
-        return False
-
-    lp_message = GenerateMessage() # Create a random message to be send to LPforum
-
-    toAddr, email_message = lp.message_body(lp_message)
-    smtp_server.sendmail(username, toAddr, email_message.as_string())
-    return True
-
-main()
