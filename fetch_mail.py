@@ -1,29 +1,23 @@
 """
-Read/Extract Unseen Mails using python
-Requirements :
-    1. imaplib, 2. OS, 3. base64, 4. email
-    5. emai.parser -> BytesParser (for parsing the data
-    stored inside a file or variable).
+Method1
+-------
+    1. imaplib module
+        -> Establish a connection
+        -> Select the mailbox
+        -> Search for unseen mails
+        -> fetch their id
+        -> get raw data of each id
+        -> perform regex to find msg. patterns
+        -> save into a file
+        -> quit()
 """
 
-import imaplib
-import logging
-from time import perf_counter
-import sys
-import os
-import notify2
+import imaplib  # For reading messages
+import logging  # For catching logs
 import email
 import re
 import email.policy
 import socket  # Require for imaplib. connection
-from dotenv import load_dotenv  # Require for loading env. variables
-
-logging.basicConfig(
-    filename="logs.txt",
-    filemode="w",
-    format=" %(asctime)s -> %(message)s ",
-    level=logging.INFO,
-)
 
 
 class LPForum:
@@ -35,9 +29,8 @@ class LPForum:
         return str(self.email_user)
 
     def login(self):
-        """ Creating a secure connection over SSL socket.
-        Return an imap4 object
-        """
+        """ Creating a secure connection over SSL socket
+        Return an imap4 object to "mail" variable """
         try:
             mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
 
@@ -56,7 +49,6 @@ class LPForum:
         _, msgnums = obj.search(
             "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
         )  # Search message inside mailbox
-        
         logging.info(f"Found unseen mail list : {msgnums}")
         if len(msgnums[0]) > 0:
             return msgnums
@@ -108,6 +100,7 @@ class LPForum:
         for objI in messages_obj:
             payload_body.append(objI.get_payload()[0].get_content())
 
+        # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
         user_tag = "Himan10"
         regex_pattern = r"(\[/?quote(?:=[^]]*)?\])"
         quote_level = 0
@@ -115,7 +108,7 @@ class LPForum:
         found = []
 
         for payload in payload_body:
-            pieces = re.split(regex_pattern, payload)
+            pieces = re.split(regex_pattern, payload)  # [0].split('\n')
 
             if len(pieces) > 1:
                 for piece in pieces:
@@ -130,10 +123,12 @@ class LPForum:
                                 quote_level -= 1
                         else:
                             if user_tag in last_quote_tag or user_tag in piece:
+                                # print(last_quote_message)
                                 found.append(last_quote_message + piece)
                                 last_quote_tag = last_quote_message = ""
-
-            else: # Message which doesn't contain quoted message. 
+            else:
+                # if someone only send a reply without quoting any message but
+                # now you have to take care which message to save and which not
                 found_mentioned_message = list(
                     filter(lambda x: user_tag in x, pieces[0].split("\n"))
                 )  # check for Himan10
@@ -144,7 +139,7 @@ class LPForum:
 
         # Write the message inside message.txt
         if found is not None:
-            with open("/home/hi-man/python/pyproject/LPforum/message.txt", "w") as file:
+            with open("txtFiles/message.txt", "w") as file:
                 file.write(
                     f' To: {Headers["To"]}\n\n \
 Subject: {Headers["Subject"]}\n\n \
@@ -157,11 +152,9 @@ Reply-To: {Headers["Reply-To"][0]}\n\n'
 
         # Write the headers inside message2.txt
         i = 0
-        with open("/home/hi-man/python/pyproject/LPforum/message2.txt", "w") as file:
+        with open("txtFiles/message2.txt", "w") as file:
             while i < len(Headers["From"]):
                 sender_name = Headers["From"][i].split("via")[0]
                 sender_address = Headers["Reply-To"][i]
                 file.write(f"{sender_name} - {sender_address}\n")
                 i += 1
-
-        return Headers
