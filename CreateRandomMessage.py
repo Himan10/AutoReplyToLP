@@ -23,7 +23,7 @@ def GenerateMessage():
     lastLine = "\nLots of Love and virtual hugs to "
     names = []
     with open('txtFiles/message2.txt', 'r') as file:
-        names = list(map(lambda x: '@'+x.strip('-')[0].strip(), set(file.readlines())))
+        names = list(set(map(lambda x: '@'+x.split('-')[0].strip(), file.readlines())))
     
     full_Message = startLine + finalQuote + lastLine + ' '.join(names)
     return full_Message
