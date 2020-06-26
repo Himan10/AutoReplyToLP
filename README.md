@@ -7,8 +7,27 @@
 - [x] Reading the notification pop-up (DONE)
 
 ## Some details :
-  1. **Fetch email message** : Whenever someone quoted my message or mentioned me in one of their comment then LP forum sends a mail to notify about those messages. So, this step working is very basic like, it only fetches those messages which come from <linkinpark@discoursemail.com and are UNREAD too.
-    You can check the fetched message (stored in fetched_message.txt) how the quote tags and mentions are arranged
+  1. **Fetch email message** : This task is basically related to fetch incoming emails which are not yet seen, by LPForum. 
+  
+      So, whenever someone replies on LPForum and if he/she mentioned me or quoted my message or just re-reply on my message (without mentioned or quoting) then LPForum will notify me by sending me an email. Now, once i receive the email, the python script will fetch the raw contents of an email and extract the messages which match the following pattern : 
+
+     ```
+     1. Quoted Message + Second person reply
+     [quote=Himan10...]
+     Second Person reply
+     
+     2 IF no quoted Message of Himan10 but there are other quoted message, 
+     -> Search for the particular reply in which @Himan10 is mentioned
+     
+     2.1 No quoted Message in the entire message,
+     -> Split the lines, Check in which line @Himan10 is mentioned
+     
+     2.2 No quoted Message and no one mentioned @Himan10 (This is the case of direct reply)
+     -> Save the entire message
+     ```
+
+      Now this process of fetching the emails from a specific sender is done by using the library -> imaplib (in python). What it does is, it connects you(the    client) to the IMAP server and allows you to perform several functions like selecting the mailbox, search for a particular message from a specific sender and many more. You can read more about imaplib from the given link provided below. 
+ 
   
   2. **Send email message** : Here i created a MIME message object (from scratch) which includes :
         
