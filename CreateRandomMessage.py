@@ -3,11 +3,11 @@ and Add a line at the end of the file
 lots of love @sender_tags
 """
 
-from random import choice
+from random import choice, sample
 
 def GenerateMessage():
 
-    full_Message = ''
+    fullMessage = ''
 
     # Starting line
     startLine = ""
@@ -15,15 +15,16 @@ def GenerateMessage():
         startLine = choice(file.readlines())
 
     #Select a quote
-    finalQuote = ""
+    FinalQuote = "Quote of the Day -> "
     with open('txtFiles/quotes.txt', 'r') as file:
-        finalQuote = choice(file.readlines())   # return a list
+        FinalQuote += choice(file.readlines())   # return a list
 
     #Create a line
-    lastLine = "\nLots of Love and virtual hugs to "
+    LastLine = "\nLots of Love and virtual hugs to "
     names = []
     with open('txtFiles/message2.txt', 'r') as file:
         names = list(set(map(lambda x: '@'+x.split('-')[0].strip(), file.readlines())))
     
-    full_Message = startLine + finalQuote + lastLine + ' '.join(names)
-    return full_Message
+    fullMessage = startLine + FinalQuote + LastLine + ' '.join(names)
+    fullMessage = '\n'.join(sample(fullMessage.split('\n'), len(fullMessage.split('\n'))))
+    return fullMessage
