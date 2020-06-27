@@ -3,21 +3,35 @@
 # this while loop is for not considering two string fields which you get right after starting a process
 # Test string ->['string "ShanonPark posted in "HEY! YOU! What are you up to right now! (Part 3)" - Linkin Park / LPU Forums"'] 2 
 
-import sys
 import time
+import sys
 import notify2
-from fetch_mail import main
+from setup import main
 
-def Notify():
-    notify2.init('LPforum')
-    pop_up = notify2.Notification('Python Script initialized', 'Starts under 11 minutes')    
-    pop_up.set_timeout(12000)
-    pop_up.set_urgency(0)
-    pop_up.show()
-
-
-def fuckString(data: str) -> str:
+def EditString(data: str) -> str:
     return data[0].split('"', 1)[1].replace('"', '')
+
+def Notify(summary, data, urgency, timeout=800000):
+    notify2.init("AutoReplyToLP")
+    pop_up = notify2.Notification(summary, data)
+    pop_up.set_urgency(urgency)
+    pop_up.set_timeout(timeout)
+    return pop_up
+
+def countdown_timer(timeMS):
+    # timeMS should be in millisecond
+    minute = timeMS // 60000
+    second = 59
+    pop_up = Notify(f"{minute:02d} : {second:02d}", "Time Left", 1)
+
+    while minute > -1:
+        pop_up.update(f"Time Left -> {minute:02d} : {second:02d}")
+        time.sleep(1)
+        pop_up.show()
+        if second == 0:
+            minute -= 1
+            second = 60
+        second -= 1
 
 wasteLines = 0
 while wasteLines <= 1:
@@ -28,7 +42,6 @@ del tempInput, wasteLines
 
 # string fields after above two non-considering fields
 DataNumber = 0
-FromLP = False
 matchedApp = None
 applications = ['notify-send', "Brave", "Firefox",  "firefox"]
 constructData = []
@@ -39,18 +52,17 @@ while True:
         if len(NotifyData[0]) <= 1:
             pass
         else:
-            if fuckString(NotifyData) in applications:
-                matchedApp = fuckString(NotifyData)
+            if EditString(NotifyData) in applications:
+                matchedApp = EditString(NotifyData)
                 DataNumber = 0
             
             #print(NotifyData, DataNumber)
             if matchedApp in applications:
                 if DataNumber == 2:
-                    constructData = [fuckString(NotifyData)]
+                    constructData = [EditString(NotifyData)]
                 if DataNumber == 3 and 'linkin park' in constructData[0].lower():
-                    Notify() # notify the user about upcoming task
-                    time.sleep(10)
-                    main() # Run the script fetch_mail 
+                    countdown_timer(780000) # timer
+                    main() # launching main program
 
                 DataNumber += 1
     except KeyboardInterrupt as e:
