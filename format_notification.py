@@ -32,6 +32,8 @@ def countdown_timer(timeMS):
             minute -= 1
             second = 60
         second -= 1
+    pop_up.update("Countdown Completed")
+    pop_up.show()
 
 wasteLines = 0
 while wasteLines <= 1:
@@ -61,7 +63,7 @@ while True:
                 if DataNumber == 2:
                     constructData = [EditString(NotifyData)]
                 if DataNumber == 3 and 'linkin park' in constructData[0].lower():
-                    countdown_timer(780000) # timer
+                    countdown_timer(840000) # timer
                     main() # launching main program
 
                 DataNumber += 1
