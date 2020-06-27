@@ -1,0 +1,69 @@
+#!/bin/env python
+
+import os
+import logging
+import notify2
+from time import perf_counter
+from dotenv import load_dotenv
+from fetch_mail import LPForum
+from send_mail import SendToLPForum
+from CreateRandomMessage import GenerateMessage
+
+def Notify(summary, data, urgency, timeout=12000):
+    """ Create a notification pop-up
+    to aware the user about task status
+    """
+
+    notify2.init("AutoReplyToLP")
+    pop_up = notify2.Notification(summary, data)
+    pop_up.set_urgency(urgency)
+    pop_up.set_timeout(timeout)
+    pop_up.show()
+    
+
+def main():
+
+    logging.basicConfig(
+            filename="logs.txt",
+            filemode="w",
+            format="%(asctime)s - %(message)s",
+            level=logging.INFO
+    )
+
+    start_time = perf_counter() # Calculate time for fetch_mail
+    
+    load_dotenv()
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    # Calling -> fetch_mail.LPForum
+
+    LPclient = LPForum(username, password)
+    imap_obj = LPclient.login()
+    msg_id = LPclient.get_message_id(imap_obj)
+    if msg_id is False:
+        Notify("python fetch_mail.py", "Nothing Found", 2)
+        quit()
+    r_msg = LPclient.fetch_raw_message(imap_obj, msg_id)
+    LPclient.extract_contents(r_msg)
+    
+    imap_obj.close()
+    imap_obj.logout()
+    Notify("python fetch_mail.py", "DONE", 0)
+
+    # Create a Random Message
+    lp_message = GenerateMessage()
+
+    # Calling -> send_mail.SendToLPForum
+
+    lp = SendToLPForum(username, password)
+    smtp_server = lp.login()
+    if smtp_server is False:
+        Notify("python send_mail.py", "Login Error", 2)
+        quit()
+
+    toAddr, email_message = lp.message_body(lp_message)
+    smtp_server.sendmail(username, "bhatnagarsonia46@gmail.com", email_message.as_string())
+    Notify("python send_mail.py", "DONE", 0)
+
+    logging.info(f'Time Taken -> {perf_counter() - start_time}')
