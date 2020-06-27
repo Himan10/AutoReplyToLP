@@ -97,11 +97,11 @@ class SendToLPForum:
         # MIMEBase = application/octet-stream -> contain documents
         p = MIMEBase('application', 'octet-stream')
 
-        with open('resources/OpenUpMyMind.jpg', 'rb') as pic_file:
+        with open('resources/APlaceForMyHead.jpg', 'rb') as pic_file:
             p.set_payload(pic_file.read())
 
         encoders.encode_base64(p)
-        p.add_header('Content-Disposition', 'attachment', filename='linkinpark.png')
+        p.add_header('Content-Disposition', 'attachment', filename='APlaceForMyHead.png')
         p.add_header('Content-ID', '<image1>')
         msg_root.attach(p)
 
