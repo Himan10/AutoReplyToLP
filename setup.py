@@ -63,7 +63,7 @@ def main():
         quit()
 
     toAddr, email_message = lp.message_body(lp_message)
-    smtp_server.sendmail(username, "bhatnagarsonia46@gmail.com", email_message.as_string())
+    smtp_server.sendmail(username, toAddr, email_message.as_string())
     Notify("python send_mail.py", "DONE", 0)
 
     logging.info(f'Time Taken -> {perf_counter() - start_time}')
