@@ -7,7 +7,7 @@ from time import perf_counter
 from dotenv import load_dotenv
 from fetch_mail import LPForum
 from send_mail import SendToLPForum
-from CreateRandomMessage import GenerateMessage
+from random_message import GenerateMessage
 
 def Notify(summary, data, urgency, timeout=12000):
     """ Create a notification pop-up
