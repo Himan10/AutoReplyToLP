@@ -1,9 +1,13 @@
 # REPLY TO LINKIN PARK FORUM
 
+## Work Flow
+![Work Flow](/resources/workflow.jpg)
+Sorry for this type of work flow.. will change it soon :P
+
 ## Task List
 - [x] Fetch email message (DONE)
 - [x] Send email message (DONE)
-- [x] Creating a random text generator (10%)
+- [x] Creating a random text message (10%)
 - [x] Reading the notification pop-up (DONE)
 
 ## Some details :
@@ -27,18 +31,27 @@
      ```
 
       Now this process of fetching the emails from a specific sender is done by using the library -> imaplib (in python). What it does is, it connects you(the    client) to the IMAP server and allows you to perform several functions like selecting the mailbox, search for a particular message from a specific sender and many more. You can read more about imaplib from the given link provided below. 
- 
+      
+  2. **Random Text message** : In this task, I've some read file operations which is used to randomly select the sentences from a file and then combine them into one. Also, The structure of a text message would look like :  
   
-  2. **Send email message** : Here i created a MIME message object (from scratch) which includes :
+       = text message =
+        1. Starting Greets
+        2. Someone's Quote
+        3. Tags/Mention
+        4. Image
+     
+     There's no particular order for a message to only get construct in one way. I mean, messages from 1st to 3rd will get shuffled every time you call the function inside the file (random_message.py) but an image will always be inserted at the end. Also, i want this task to generate a sensible and accurate message based on  second user reply but for now I'll keep it as a basic prototype and will make changes in future.
+  
+  3. **Send email message** : Here i created a MIME message object (from scratch) which includes :
         
        = main/sub_type =
-        1. text/plain
-        2. text/html
+        1. text/plain - contains random text message.
+        2. text/html - html version of above message.
         3. image/jpg
      
      Now, after combining all these MIME classes(MIMEText, MIMEBase) objects with MIMEMultipart('related') i can easily send mails by using smtp.sendmail(fromAddr, toAddr, msg)
 
-  3. **Capture incoming Notifications** : Here, i used a tool called "dbus-monitor" which helps us to monitor the messages going   through Dbus message bus. This Dbus message bus mentioned here refers to the Session bus which is mainly used for communication   between two applications. 
+  4. **Capture incoming Notifications** : Here, i used a tool called "dbus-monitor" which helps us to monitor the messages going   through Dbus message bus. This Dbus message bus mentioned here refers to the Session bus which is mainly used for communication   between two applications. 
 
         In easiest way, think of a Dbus-daemon as a PIPE connected with two or more services or programs (using dbus-library). Now, this tool monitors the message going through this PIPE and print the raw data to stdout. 
 
@@ -60,3 +73,13 @@
 - [ ] Making it asynchronous
 - [ ] Automate Downloading images
 - [ ] Better Random message generator
+
+## Further readings 
+1. [Regex](https://www.regular-expressions.info/quickstart.html)
+2. [python3 imaplib module](https://docs.python.org/3/library/imaplib.html)
+3. [python3 smtplib module](https://docs.python.org/3/library/smtplib.html)
+4. [Linux Desktop with Dbus](https://www.linuxjournal.com/article/10455)
+5. [python3 email.mime module](https://docs.python.org/3/library/email.mime.html)
+
+I'm still working on this project and will continue to work in the future too. Any type of feedback is welcomed and appreciated. 
+Thankyou. 
