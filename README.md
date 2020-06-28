@@ -35,19 +35,19 @@ Sorry for this type of work flow.. will change it soon :P
   2. **Random Text message** : In this task, I've some read file operations which is used to randomly select the sentences from a file and then combine them into one. Also, The structure of a text message would look like :  
   
        = text message =
-        1. Starting Greets
-        2. Someone's Quote
-        3. Tags/Mention
-        4. Image
+        * Starting Greets
+        * Someone's Quote
+        * Tags/Mention
+        * Image
      
      There's no particular order for a message to only get construct in one way. I mean, messages from 1st to 3rd will get shuffled every time you call the function inside the file (random_message.py) but an image will always be inserted at the end. Also, i want this task to generate a sensible and accurate message based on  second user reply but for now I'll keep it as a basic prototype and will make changes in future.
   
   3. **Send email message** : Here i created a MIME message object (from scratch) which includes :
         
        = main/sub_type =
-        1. text/plain - contains random text message.
-        2. text/html - html version of above message.
-        3. image/jpg
+        * text/plain - contains random text message.
+        * text/html - html version of above message.
+        * image/jpg
      
      Now, after combining all these MIME classes(MIMEText, MIMEBase) objects with MIMEMultipart('related') i can easily send mails by using smtp.sendmail(fromAddr, toAddr, msg)
 
