@@ -3,7 +3,7 @@
 ## Task List
 - [x] Fetch email message (DONE)
 - [x] Send email message (DONE)
-- [ ] Creating a random text generator.
+- [x] Creating a random text generator (10%)
 - [x] Reading the notification pop-up (DONE)
 
 ## Some details :
@@ -55,3 +55,8 @@
         Once i received the raw data which contains some arrays, strings, signals, methods, sender and destination service. It is     kinda hard to parse this raw data but we can perform regex search here to extract the contents having char "string", because  mostly the   summary, data and application are of type string. Then my next task is to format it. So, we can only get the   required data like   -> header : payload.
 
         I wrote a python script to do this and save the formatted data into a file or i have done one more thing i.e., Check if the notification came from LPForum then run other py script (fetchmail.py and sendmail.py) otherwise keep scanning the summary of   incoming notifications.  
+
+## TODO
+- [ ] Making it asynchronous
+- [ ] Automate Downloading images
+- [ ] Better Random message generator
