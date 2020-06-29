@@ -1,8 +1,7 @@
 # REPLY TO LINKIN PARK FORUM
 
 ## Work Flow
-![Work Flow](/resources/workflow.jpg)
-Sorry for this type of work flow.. will change it soon :P
+![Work Flow](/resources/LPworkflow.png)
 
 ## Task List
 - [x] Fetch email message (DONE)
@@ -11,9 +10,9 @@ Sorry for this type of work flow.. will change it soon :P
 - [x] Reading the notification pop-up (DONE)
 
 ## Some details :
-  1. **Fetch email message** : This task is basically related to fetch incoming emails which are not yet seen, by LPForum. 
+  1. **Fetch email message** : This task is basically related to "fetch incoming emails of LPForum" which are left unseen by the user.
   
-      So, whenever someone replies on LPForum and if he/she mentioned me or quoted my message or just re-reply on my message (without mentioned or quoting) then LPForum will notify me by sending me an email. Now, once i receive the email, the python script will fetch the raw contents of an email and extract the messages which match the following pattern : 
+      So, whenever someone replies on LPForum and if he/she mentioned me or quoted my message or just re-reply on my message (without mentioned or quoting) then LPForum will notify me by sending me an email. Now once i receive it, the python script will fetch the raw contents of an email and extract those messages which match the following pattern : 
 
      ```
      1. Quoted Message + Second person reply
@@ -67,7 +66,7 @@ Sorry for this type of work flow.. will change it soon :P
 
         Once i received the raw data which contains some arrays, strings, signals, methods, sender and destination service. It is     kinda hard to parse this raw data but we can perform regex search here to extract the contents having char "string", because  mostly the   summary, data and application are of type string. Then my next task is to format it. So, we can only get the   required data like   -> header : payload.
 
-        I wrote a python script to do this and save the formatted data into a file or i have done one more thing i.e., Check if the notification came from LPForum then run other py script (fetchmail.py and sendmail.py) otherwise keep scanning the summary of   incoming notifications.  
+        I've written a python script to do this heck if the notification came from LPForum then run other py script (fetchmail.py and sendmail.py) otherwise keep scanning the summary of   incoming notifications. Also, you can save the summary and data of a notification in a file just to keep track of them.  
 
 ## TODO
 - [ ] Making it asynchronous
@@ -76,10 +75,11 @@ Sorry for this type of work flow.. will change it soon :P
 
 ## Further readings 
 1. [Regex](https://www.regular-expressions.info/quickstart.html)
+2. [Email Working](https://www.namecheap.com/hosting/how-does-email-work/)
 2. [python3 imaplib module](https://docs.python.org/3/library/imaplib.html)
 3. [python3 smtplib module](https://docs.python.org/3/library/smtplib.html)
 4. [Linux Desktop with Dbus](https://www.linuxjournal.com/article/10455)
 5. [python3 email.mime module](https://docs.python.org/3/library/email.mime.html)
 
-I'm still working on this project and will continue to work in the future too. Any type of feedback is welcomed and appreciated. 
+#### I'm still working on this project and will continue to work in the future too. Any type of feedback is welcomed and appreciated. 
 Thankyou. 
