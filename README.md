@@ -68,6 +68,9 @@
 
         I've written a python script to do this heck if the notification came from LPForum then run other py script (fetchmail.py and sendmail.py) otherwise keep scanning the summary of   incoming notifications. Also, you can save the summary and data of a notification in a file just to keep track of them.  
 
+## DEMO
+ ### Video - [watch the video](https://drive.google.com/file/d/110RPnh1a7zCIK9Ur0WPLrHpaYUhMjOY_/view?usp=sharing)
+
 ## TODO
 - [ ] Making it asynchronous
 - [ ] Automate Downloading images
