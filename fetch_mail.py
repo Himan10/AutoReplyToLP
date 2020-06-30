@@ -24,6 +24,7 @@ class LPForum:
     def __init__(self, email, password):
         self.email_user = email
         self.email_pass = password
+        self.subscribed_email = "linkinpark@discoursemail.com"
 
     def __str__(self):
         return str(self.email_user)
@@ -47,7 +48,7 @@ class LPForum:
 
         obj.select(mailbox="INBOX")  # Select a mailbox first
         _, msgnums = obj.search(
-            "utf-8", "(Unseen)", "FROM", "linkinpark@discoursemail.com"
+            "utf-8", "(Unseen)", "FROM", self.subscribed_email
         )  # Search message inside mailbox
         logging.info(f"Found unseen mail list : {msgnums}")
         if len(msgnums[0]) > 0:
