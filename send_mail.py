@@ -12,11 +12,11 @@ Method 1:
 
 """
 
-import ssl # for creating context - CA certificates
+import ssl  # for creating context - CA certificates
 import smtplib
 import logging
-from email import encoders # for encoding the data into base64
-from email.mime.base import MIMEBase # Base = application/octet-stream
+from email import encoders  # for encoding the data into base64
+from email.mime.base import MIMEBase  # Base = application/octet-stream
 from email.mime.multipart import MIMEMultipart  # multipart = mixed
 from email.mime.text import MIMEText  # multipart = text/plain
 from email.policy import default  # Make a use of RFC and \n For line ending
@@ -40,12 +40,12 @@ class SendToLPForum:
             context = ssl.create_default_context()
 
             server = smtplib.SMTP(self.host, self.port)
-            server.starttls(context=context) # secured by tls connection
-        
+            server.starttls(context=context)  # secured by tls connection
+
             server.login(self.user, self.passwd)
             return server
         except Exception as err:
-            logging.info(f"SendToLPForum.login : {err}")
+            logging.error(f"SendToLPForum.login : {err}")
             return False
 
     def message_body(self, Message: str):
@@ -59,7 +59,7 @@ class SendToLPForum:
          |_Image
         """
         # Related - Send images with messages
-        msg_root = MIMEMultipart('related')
+        msg_root = MIMEMultipart("related")
 
         # Add mail headers - From, To, Subject
         msg_root["From"] = self.user
@@ -68,19 +68,20 @@ class SendToLPForum:
 
         msg_root["To"] = ToAddr = data[6].split(":")[1].strip()
         msg_root["Subject"] = data[2].split(":")[1].strip()
-        msg_root.preamble = 'This is a Multi part message Plain Text/Image'
+        msg_root.preamble = "This is a Multi part message Plain Text/Image"
 
         # Alternative - diff. type of same content
         # text/plain
-        msgAlt = MIMEMultipart('alternative')
+        msgAlt = MIMEMultipart("alternative")
 
         if Message is None:
             raise Exception("Empty Message")
-        msgAlt.attach(MIMEText(Message, 'plain', 'utf-8'))
+        msgAlt.attach(MIMEText(Message, "plain", "utf-8"))
 
         # text/html
-        Message = Message.replace('\n', '<br>')
-        html = """\
+        Message = Message.replace("\n", "<br>")
+        html = (
+            """\
         <html>
         <head></head>
         <body>
@@ -89,20 +90,24 @@ class SendToLPForum:
         </p>
         <img src="cid:image1"><br>
         </body>
-        </html> """ % Message
+        </html> """
+            % Message
+        )
 
-        msgAlt.attach(MIMEText(html, 'html'))
+        msgAlt.attach(MIMEText(html, "html"))
         msg_root.attach(msgAlt)
 
         # MIMEBase = application/octet-stream -> contain documents
-        p = MIMEBase('application', 'octet-stream')
+        p = MIMEBase("application", "octet-stream")
 
-        with open('resources/APlaceForMyHead.jpg', 'rb') as pic_file:
+        with open("resources/APlaceForMyHead.jpg", "rb") as pic_file:
             p.set_payload(pic_file.read())
 
         encoders.encode_base64(p)
-        p.add_header('Content-Disposition', 'attachment', filename='APlaceForMyHead.png')
-        p.add_header('Content-ID', '<image1>')
+        p.add_header(
+            "Content-Disposition", "attachment", filename="APlaceForMyHead.png"
+        )
+        p.add_header("Content-ID", "<image1>")
         msg_root.attach(p)
 
         # Send mail
