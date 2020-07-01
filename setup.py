@@ -9,35 +9,30 @@ from fetch_mail import LPForum
 from send_mail import SendToLPForum
 from random_message import GenerateMessage
 
+
 def Notify(summary, data, urgency, timeout=12000):
     """ Create a notification pop-up
     to aware the user about task status
     """
-
-    notify2.init("AutoReplyToLP")
     pop_up = notify2.Notification(summary, data)
     pop_up.set_urgency(urgency)
     pop_up.set_timeout(timeout)
     pop_up.show()
-    
+
 
 def main():
 
-    logging.basicConfig(
-            filename="logs.txt",
-            filemode="w",
-            format="%(asctime)s - %(message)s",
-            level=logging.INFO
-    )
-
-    start_time = perf_counter() # Calculate time for fetch_mail
+    notify2.init("AutoReplyToLP")  # initialize the Dbus connection
+    start_time = perf_counter()  # Calculate time for fetch_mail
     
     load_dotenv()
-    username = os.getenv("USERNAME")
-    password = os.getenv("PASSWORD")
+    try:
+        username = os.getenv("USERNAME")
+        password = os.getenv("PASSWORD")
+    except:
+        logging.error('.env file not loaded')
 
     # Calling -> fetch_mail.LPForum
-
     LPclient = LPForum(username, password)
     imap_obj = LPclient.login()
     msg_id = LPclient.get_message_id(imap_obj)
@@ -46,7 +41,7 @@ def main():
         quit()
     r_msg = LPclient.fetch_raw_message(imap_obj, msg_id)
     LPclient.extract_contents(r_msg)
-    
+
     imap_obj.close()
     imap_obj.logout()
     Notify("python fetch_mail.py", "DONE", 0)
@@ -55,7 +50,6 @@ def main():
     lp_message = GenerateMessage()
 
     # Calling -> send_mail.SendToLPForum
-
     lp = SendToLPForum(username, password)
     smtp_server = lp.login()
     if smtp_server is False:
@@ -66,4 +60,4 @@ def main():
     smtp_server.sendmail(username, toAddr, email_message.as_string())
     Notify("python send_mail.py", "DONE", 0)
 
-    logging.info(f'Time Taken -> {perf_counter() - start_time}')
+    logging.info(f"Time Taken -> {perf_counter() - start_time}")
