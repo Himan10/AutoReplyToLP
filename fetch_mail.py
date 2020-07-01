@@ -39,7 +39,7 @@ class LPForum:
             mail.login(self.email_user, self.email_pass)
             return mail
         except imaplib.IMAP4.error as err:
-            logging.info(err)
+            logging.error(err)
             return False
 
     def get_message_id(self, obj):
@@ -101,8 +101,9 @@ class LPForum:
         for objI in messages_obj:
             payload_body.append(objI.get_payload()[0].get_content())
 
-        # pattern = r"(\[[\W\w]{9}user_tag.+?(?=\]).+?(?=\[\W\w{5}\]))(.*?(?=\[[\w]{5}))"
+
         user_tag = "Himan10"
+        # extract [quote=...] or [/quote]
         regex_pattern = r"(\[/?quote(?:=[^]]*)?\])"
         quote_level = 0
         last_quote_tag = last_quote_message = ""
@@ -128,8 +129,8 @@ class LPForum:
                                 found.append(last_quote_message + piece)
                                 last_quote_tag = last_quote_message = ""
             else:
-                # if someone only send a reply without quoting any message but
-                # now you have to take care which message to save and which not
+                # reply without quoting any message
+                # checkout which message to save and which not
                 found_mentioned_message = list(
                     filter(lambda x: user_tag in x, pieces[0].split("\n"))
                 )  # check for Himan10
