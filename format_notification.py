@@ -3,8 +3,8 @@
 import sys
 import notify2
 import logging
+import time
 from setup import main
-from datetime import datetime
 
 logging.basicConfig(
     filename="logs.txt",
