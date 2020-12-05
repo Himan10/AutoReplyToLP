@@ -71,11 +71,6 @@
 ## DEMO
  ### Video - [watch the video](https://drive.google.com/file/d/110RPnh1a7zCIK9Ur0WPLrHpaYUhMjOY_/view?usp=sharing)
 
-## TODO
-- [ ] Making it asynchronous
-- [ ] Automate Downloading images
-- [ ] Better Random message generator
-
 ## Further readings 
 1. [Regex](https://www.regular-expressions.info/quickstart.html)
 2. [Email Working](https://www.namecheap.com/hosting/how-does-email-work/)
@@ -85,4 +80,7 @@
 5. [python3 email.mime module](https://docs.python.org/3/library/email.mime.html)
 
 #### I'm still working on this project and will continue to work in the future too. Any type of feedback is welcomed and appreciated. 
+
+**[UPDATE]** The forum on which this project is based was closed by Linkin Park. Later they came up with a new forum because of their Hybrid Theory 20th Anniversary. So, I'll do some changes according to the new forum structure.
+ 
 Thankyou. 
